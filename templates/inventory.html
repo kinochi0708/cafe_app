@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在庫一覧</title>
+</head>
+<body>
+    <h1>在庫一覧</h1>
+
+    <table border="1">
+        <tr>
+            <th>商品名</th>
+            <th>説明</th>
+            <th>カテゴリ</th>
+            <th>単価</th>
+        </tr>
+
+        {% for product in products %}
+        <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.description }}</td>
+            <td>{{ product.category }}</td>
+            <td>{{ product.unitprice }} 円</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <hr>
+
+    <!-- 商品登録ページへのリンク -->
+    <a href="{{ url_for('add_product') }}">
+        <button>商品登録画面に戻る</button>
+    </a>
+</body>
+</html>

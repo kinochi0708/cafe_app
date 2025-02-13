@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品登録</title>
+</head>
+<body>
+    <h1>商品登録</h1>
+    <form method="POST">
+        <label for="name">商品名:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="description">説明:</label>
+        <input type="text" id="description" name="description"><br>
+
+        <label for="category">カテゴリ:</label>
+        <input type="text" id="category" name="category"><br>
+
+        <label for="unitprice">単価:</label>
+        <input type="number" id="unitprice" name="unitprice" step="0.01" required><br>
+
+        <button type="submit">登録</button>
+    </form>
+
+    <hr>
+
+    <!-- 在庫一覧ページへのリンク -->
+    <a href="{{ url_for('inventory') }}">
+        <button>在庫一覧を見る</button>
+    </a>
+</body>
+</html>
