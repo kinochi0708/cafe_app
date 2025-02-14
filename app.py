@@ -100,6 +100,22 @@ def edit_product(id):
 
     return render_template('edit_product.html', product=product)
 
+# 商品削除ページ
+@app.route('/delete_product/<int:id>', methods=['POST'])
+def delete_product(id):
+    product = Product.query.get_or_404(id)
+    
+    # 関連する在庫取引を削除
+    StockTransaction.query.filter_by(productid=id).delete()
+
+    try:
+        db.session.delete(product)
+        db.session.commit()
+        return redirect(url_for('products'))
+    except Exception as e:
+        db.session.rollback()
+        return f'エラーが発生しました: {str(e)}'
+
 # 在庫の入出庫登録ページ
 @app.route('/stock_transaction', methods=['GET', 'POST'])
 def stock_transaction():
