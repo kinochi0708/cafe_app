@@ -28,6 +28,7 @@
             <th>説明</th>
             <th>カテゴリ</th>
             <th>単価（円）</th>
+            <th>操作</th>
         </tr>
         {% for product in products %}
         <tr>
@@ -36,8 +37,12 @@
             <td>{{ product.description }}</td>
             <td>{{ product.category }}</td>
             <td>{{ product.unitprice }}</td>
+            <td>
+                <a href="{{ url_for('edit_product', id=product.id) }}">編集</a>
+            </td>
         </tr>
         {% endfor %}
     </table>
+    
 </body>
 </html>

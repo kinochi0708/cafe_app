@@ -80,6 +80,26 @@ def products():
     products = Product.query.all()
     return render_template('products.html', products=products)
 
+# 商品編集ページ
+@app.route('/edit_product/<int:id>', methods=['GET', 'POST'])
+def edit_product(id):
+    product = Product.query.get_or_404(id)
+
+    if request.method == 'POST':
+        product.name = request.form['name']
+        product.description = request.form['description']
+        product.category = request.form['category']
+        product.unitprice = float(request.form['unitprice'])
+
+        try:
+            db.session.commit()
+            return redirect(url_for('products'))
+        except Exception as e:
+            db.session.rollback()
+            return f'エラーが発生しました: {str(e)}'
+
+    return render_template('edit_product.html', product=product)
+
 # 在庫の入出庫登録ページ
 @app.route('/stock_transaction', methods=['GET', 'POST'])
 def stock_transaction():
