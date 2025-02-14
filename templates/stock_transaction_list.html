@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>入出庫履歴一覧</title>
+</head>
+<body>
+    <h1>入出庫履歴一覧</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>商品名</th>
+                <th>ユーザー名</th>
+                <th>数量</th>
+                <th>種別</th>
+                <th>日時</th>
+                <th>備考</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in transactions %}
+            <tr>
+                <td>{{ transaction.id }}</td>
+                <td>{{ transaction.product_name }}</td>
+                <td>{{ transaction.user_name }}</td>
+                <td>{{ transaction.quantity }}</td>
+                <td>{{ "入庫" if transaction.type == "IN" else "出庫" }}</td>
+                <td>{{ transaction.transactiondate }}</td>
+                <td>{{ transaction.notes if transaction.notes else "なし" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/stock_transaction">入出庫登録へ</a>
+</body>
+</html>

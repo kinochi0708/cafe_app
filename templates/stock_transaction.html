@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商品登録</title>
+    <title>在庫入出庫登録</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,11 +17,10 @@
         label {
             font-weight: bold;
         }
-        input, select {
+        select, input {
             width: 100%;
             padding: 8px;
             margin: 8px 0;
-            display: inline-block;
             border: 1px solid #ccc;
             border-radius: 4px;
             box-sizing: border-box;
@@ -47,19 +46,33 @@
 </head>
 <body>
     <div class="container">
-        <h1>商品登録</h1>
-        <form action="/add_product" method="POST">
-            <label for="name">商品名:</label>
-            <input type="text" id="name" name="name" required>
+        <h1>在庫入出庫登録</h1>
+        <form action="/stock_transaction" method="POST">
+            <label for="productid">商品名:</label>
+            <select id="productid" name="productid" required>
+                {% for product in products %}
+                    <option value="{{ product.id }}">{{ product.name }}</option>
+                {% endfor %}
+            </select>
 
-            <label for="description">説明:</label>
-            <input type="text" id="description" name="description">
+            <label for="userid">担当者:</label>
+            <select id="userid" name="userid" required>
+                {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
 
-            <label for="category">カテゴリ:</label>
-            <input type="text" id="category" name="category">
+            <label for="quantity">数量:</label>
+            <input type="number" id="quantity" name="quantity" min="1" required>
 
-            <label for="unitprice">単価（円）:</label>
-            <input type="number" id="unitprice" name="unitprice" step="0.01" required>
+            <label for="type">入庫 / 出庫:</label>
+            <select id="type" name="type" required>
+                <option value="入庫">入庫</option>
+                <option value="出庫">出庫</option>
+            </select>
+
+            <label for="notes">備考:</label>
+            <input type="text" id="notes" name="notes">
 
             <button type="submit">登録</button>
         </form>
