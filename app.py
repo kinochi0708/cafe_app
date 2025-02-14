@@ -4,7 +4,6 @@ import os
 from datetime import datetime
 import pytz
 from sqlalchemy import func, case
-#from app.models import Product
 
 # Flaskアプリケーションの設定
 app = Flask(__name__)
