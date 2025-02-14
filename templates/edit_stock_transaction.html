@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>入出庫履歴編集</title>
+</head>
+<body>
+    <h1>入出庫履歴編集</h1>
+    <form action="{{ url_for('edit_stock_transaction', id=transaction.id) }}" method="POST">
+        <label for="productid">商品:</label>
+        <select name="productid" required>
+            {% for product in products %}
+                <option value="{{ product.id }}" {% if product.id = transaction.productid %}selected{% endif %}>
+                    {{ product.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <br>
+        
+        <label for="userid">ユーザー:</label>
+        <select name="userid" required>
+            {% for user in users %}
+                <option value="{{ user.id }}" {% if user.id = transaction.userid %}selected{% endif %}>
+                    {{ user.username }}
+                </option>
+            {% endfor %}
+        </select>
+        <br>
+        
+        <label for="quantity">数量:</label>
+        <input type="number" name="quantity" value="{{ transaction.quantity }}" required>
+        <br>
+        
+        <label for="type">種別:</label>
+        <select name="type" required>
+            <option value="IN" {% if transaction.type = 'IN' %}selected{% endif %}>入庫</option>
+            <option value="OUT" {% if transaction.type = 'OUT' %}selected{% endif %}>出庫</option>
+        </select>
+        <br>
+        
+        <label for="notes">備考:</label>
+        <input type="text" name="notes" value="{{ transaction.notes if transaction.notes else '' }}">
+        <br>
+        
+        <button type="submit">更新</button>
+    </form>
+    
+    <a href="{{ url_for('stock_transaction_list') }}">戻る</a>
+</body>
+</html>

@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 import pytz
 from sqlalchemy import func, case
+#from app.models import Product
 
 # Flaskアプリケーションの設定
 app = Flask(__name__)
@@ -13,12 +14,14 @@ base_dir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(base_dir, "cafe_app.db")}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# SQLAlchemyインスタンスを作成
 db = SQLAlchemy(app)
 
-# 日本時間の取得関数
+# 日本時間の取得関数（マイクロ秒を切り捨て）
 def get_jst_now():
     jst = pytz.timezone('Asia/Tokyo')
-    return datetime.now(jst)
+    now = datetime.now(jst)
+    return now.replace(microsecond=0)
 
 # データベースのテーブル定義（Productテーブル）
 class Product(db.Model):
@@ -27,6 +30,7 @@ class Product(db.Model):
     description = db.Column(db.String(200), nullable=True)
     category = db.Column(db.String(50), nullable=True)
     unitprice = db.Column(db.Float, nullable=False)
+    deleted = db.Column(db.Boolean, default=False)  # 削除フラグ追加
 
 # データベースのテーブル定義（Userテーブル）
 class User(db.Model):
@@ -44,9 +48,10 @@ class StockTransaction(db.Model):
     productid = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     userid = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
-    type = db.Column(db.String(10), nullable=False)  # IN (入庫) or OUT (出庫)
+    type = db.Column(db.String(10), nullable=False)  # 'IN' (入庫) or 'OUT' (出庫)
     transactiondate = db.Column(db.DateTime, default=get_jst_now)
     notes = db.Column(db.String(200), nullable=True)
+    deleted = db.Column(db.Boolean, default=False)  # 論理削除用フラグを追加
 
 # 商品登録ページ
 @app.route('/add_product', methods=['GET', 'POST'])
@@ -77,7 +82,7 @@ def add_product():
 # 商品一覧ページ
 @app.route('/products')
 def products():
-    products = Product.query.all()
+    products = Product.query.filter_by(deleted=False).all()  # 削除フラグが False のもののみ取得
     return render_template('products.html', products=products)
 
 # 商品編集ページ
@@ -104,12 +109,9 @@ def edit_product(id):
 @app.route('/delete_product/<int:id>', methods=['POST'])
 def delete_product(id):
     product = Product.query.get_or_404(id)
-    
-    # 関連する在庫取引を削除
-    StockTransaction.query.filter_by(productid=id).delete()
 
     try:
-        db.session.delete(product)
+        product.deleted = True  # 削除フラグを True に設定
         db.session.commit()
         return redirect(url_for('products'))
     except Exception as e:
@@ -150,20 +152,61 @@ def stock_transaction():
 # 在庫の入出庫履歴一覧ページ
 @app.route('/stock_transaction_list')
 def stock_transaction_list():
-    transactions = StockTransaction.query.join(Product, StockTransaction.productid == Product.id) \
+    transactions = StockTransaction.query.join(Product, StockTransaction.productid == Product.id, isouter=True) \
                                         .join(User, StockTransaction.userid == User.id) \
                                         .add_columns(
                                             StockTransaction.id,
-                                            Product.name.label('product_name'),
+                                            case(
+                                                (Product.deleted == True, Product.name),  
+                                                else_=Product.name
+                                            ).label('product_name'),
                                             User.username.label('user_name'),
                                             StockTransaction.quantity,
                                             StockTransaction.type,
                                             StockTransaction.transactiondate,
-                                            StockTransaction.notes
+                                            StockTransaction.notes,
+                                            Product.deleted.label('product_deleted'),
+                                            StockTransaction.deleted.label('transaction_deleted')  # ★ 追加
                                         ) \
                                         .order_by(StockTransaction.transactiondate.desc()) \
                                         .all()
     return render_template('stock_transaction_list.html', transactions=transactions)
+
+# 在庫の入出庫履歴編集ページ
+@app.route('/edit_stock_transaction/<int:id>', methods=['GET', 'POST'])
+def edit_stock_transaction(id):
+    transaction = StockTransaction.query.get_or_404(id)
+    products = Product.query.all()
+    users = User.query.all()
+
+    if request.method == 'POST':
+        transaction.productid = request.form['productid']
+        transaction.userid = request.form['userid']
+        transaction.quantity = int(request.form['quantity'])
+        transaction.type = 'IN' if request.form['type'] == '入庫' else 'OUT'
+        transaction.notes = request.form.get('notes', '')
+
+        try:
+            db.session.commit()
+            return redirect(url_for('stock_transaction_list'))
+        except Exception as e:
+            db.session.rollback()
+            return f'エラーが発生しました: {str(e)}'
+
+    return render_template('edit_stock_transaction.html', transaction=transaction, products=products, users=users)
+
+# 在庫の入出庫履歴削除ページ
+@app.route('/delete_stock_transaction/<int:id>', methods=['POST'])
+def delete_stock_transaction(id):
+    transaction = StockTransaction.query.get_or_404(id)
+
+    try:
+        transaction.deleted = True  # 論理削除
+        db.session.commit()
+        return redirect(url_for('stock_transaction_list'))
+    except Exception as e:
+        db.session.rollback()
+        return f'エラーが発生しました: {str(e)}'
 
 # 在庫一覧ページ
 @app.route('/stock_list')
@@ -176,7 +219,9 @@ def stock_list():
         ).label('total_quantity'),
         func.max(StockTransaction.transactiondate).label('last_updated')
     ).outerjoin(StockTransaction, Product.id == StockTransaction.productid) \
-    .group_by(Product.id, Product.name).all()
+    .filter(Product.deleted == False) \
+    .group_by(Product.id, Product.name) \
+    .all()
 
     stock_list = [
         {

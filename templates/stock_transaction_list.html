@@ -17,6 +17,8 @@
                 <th>種別</th>
                 <th>日時</th>
                 <th>備考</th>
+                <th>状態</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody>
@@ -29,6 +31,25 @@
                 <td>{{ "入庫" if transaction.type == "IN" else "出庫" }}</td>
                 <td>{{ transaction.transactiondate }}</td>
                 <td>{{ transaction.notes if transaction.notes else "なし" }}</td>
+                <td>
+                    {% if transaction.transaction_deleted %}
+                        <span style="color: red;">削除済み</span>
+                    {% elif transaction.product_deleted %}
+                        <span style="color: orange;">商品削除済み</span>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if not transaction.transaction_deleted %}
+                        <a href="{{ url_for('edit_stock_transaction', id=transaction.id) }}">編集</a>
+                        <form action="{{ url_for('delete_stock_transaction', id=transaction.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" onclick="return confirm('本当に削除しますか？');">削除</button>
+                        </form>
+                    {% else %}
+                        <span style="color: gray;">操作不可</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
