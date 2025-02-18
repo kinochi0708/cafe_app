@@ -175,7 +175,7 @@ def delete_product(id):
 @app.route('/stock_transaction', methods=['GET', 'POST'])
 @login_required
 def stock_transaction():
-    products = Product.query.all()
+    products = Product.query.filter_by(deleted=False).all()  # 削除フラグが False のもののみ取得
     users = User.query.all()
 
     if request.method == 'POST':
