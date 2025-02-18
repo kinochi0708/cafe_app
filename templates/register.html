@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ユーザー登録</title>
+</head>
+<body>
+    <h2>ユーザー登録</h2>
+
+    <form method="POST">
+        <label for="username">ユーザー名:</label>
+        <input type="text" id="username" name="username" required>
+        <br>
+        <label for="password">パスワード:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <label for="role">役割:</label>
+        <select id="role" name="role" required>
+            <option value="社員">社員</option>
+            <option value="パート">パート</option>
+        </select>
+        <br>
+        <button type="submit">登録</button>
+    </form>
+
+    <p>既にアカウントをお持ちですか？ <a href="{{ url_for('login') }}">ログイン</a></p>
+</body>
+</html>

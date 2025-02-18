@@ -21,7 +21,8 @@
 </head>
 <body>
     <h1>在庫一覧</h1>
-
+    <p>ログイン中: {{ current_user.username }}</p>
+    <a href="{{ url_for('logout') }}">ログアウト</a>
     <table>
         <tr>
             <th>商品名</th>
