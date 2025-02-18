@@ -301,5 +301,5 @@ def stock_list():
     return render_template('stock_list.html', stock_list=stock_list)
 
 # アプリケーションの起動
-if __name__ == '__main__':
-    app.run(debug=True)
+#if __name__ == '__main__':
+#    app.run(debug=True)
