@@ -1,7 +1,5 @@
 Flask
 Flask-SQLAlchemy
 Flask-Login
-Werkzeug
 pytz
 gunicorn
-python
